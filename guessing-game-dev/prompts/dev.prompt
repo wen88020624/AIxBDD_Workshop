@@ -5,15 +5,14 @@
 Requirement: <需求規格>
 
 # Tech Stack
-1. Language Env：Java with Maven
-2. Source root: src/main/java/
-3. Backend Web Service: Spring Boot
-4. ORM: Spring Data JPA
+1. Language Env：NodeJs
+2. Source root: src/
+3. Backend Web Service: NestJs
+4. ORM: Prisma
 
 # Application Environment
-1. App 類型：後端 Spring Boot 應用程式。
-2. Source root: src/main/java/
-3. 使用 Maven wrapper 來執行 Maven 指令
+1. App 類型：後端 NestJs 應用程式。
+2. Source root: src/
 
 # Constraints
 1. 請將多個類別分別放在不同的檔案中。
