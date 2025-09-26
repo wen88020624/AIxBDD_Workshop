@@ -1,0 +1,54 @@
+# Task
+
+1. 我現在想要開始撰寫自動化單元測試，需要你針對我指定的測試環境，來佈置一個 Walking skeleton (最小可行的基礎建設)。
+
+2. 此 Walking skeleton 涵蓋底下：
+    a. 已配置測試套件依賴
+    b. 撰寫一個最簡單的 "Hello-World" Given / When / Then 單元測試程式碼作為最小測試可行的驗證：
+        - 使用類別 HelloWorldService 作為範例測試的目標測試類別
+        - 測試的目標函數為 greet(name: string): string 傳入一個字串
+        - 撰寫的 End to End 測試程式碼的 given / when / then 為：
+            ```gherkin
+            Given my name is "Johnny"
+            When someone is greeting me
+            Then he says "Hello world 'Johnny'!" to me
+            ```
+        - 請使用 End to end 測試的程式語法來實作上述 given / when / then 測試程式碼，並使用註解來區隔 given / when / then。
+            - 請注意，務必使用 MockMvc 來呼叫 API Call 做 e2e test
+    c. 實作 HelloWorldController -> HelloWorldService 的 greet 函數 -> 此函數中會透過 HelloWorldRepository 來儲存一筆新的 greet 訊息。
+        - HelloWorldController, HelloWorldService 和 HelloWorldRepository 都被放在 src/main/example package 中。
+
+    ## 測試程式碼範例
+    
+    ```java
+    @AutoConfigureMockMvc
+    public class HelloWorldEndToEndTest {
+    
+        @Autowired
+        private MockMvc mockMvc;
+    
+        @Test
+        public void testGreeting() throws Exception {
+            // Given
+            String name = "Johnny";
+    
+            // When
+            MvcResult result = mockMvc.perform(get("/api/hello")
+                    .param("name", name)
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn();
+    
+            // Then
+            String responseContent = result.getResponse().getContentAsString();
+            assertEquals("Hello world 'Johnny'!", responseContent);
+        }
+    }
+    ```
+
+# Tech Stack Configuration
+1. Language Enviornment: Java 17
+2. Web Framework: Spring Boot
+3. Test library:
+    - JUnit 5
+    - Spring Boot Test

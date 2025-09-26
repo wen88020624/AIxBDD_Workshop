@@ -1,0 +1,15 @@
+# Task
+
+我現在想要開始撰寫自動化單元測試，需要你針對我指定的 "Feature"，依照底下規範撰寫測試程式的「樣板」註解。
+
+# Rules
+1. 請針對 Context 中指定的 Feature 部分，在指定的測試類別中，使用指定的測試套件，來在該測試類別中建立 Test Group，並且請將該功能的原文透過某種描述屬性留在該 Test Group 的定義中 （好比 `@TestGroup("<原文 Feature 名稱>")`)。（一個 Feature 一個 Test group，這樣才方便維護)
+2. 接著針對該 Feature 的每一項條列規則 (Rule)，在該 Test Group 中，開啟對應的「測試方法」，測試方法透過描述屬性將該規則的原文放入測試方法的定義中（好比 `@Test("<原文規則>")`)。
+    - 請注意，此步驟只需要針對所有規則定義對應的測試方法就好，完全不需要撰寫內部的程式碼，方法內部直接留下 TODO 註解即可。接著用戶才會依序針對每個規則測試方法去執行 TDD 三步驟。
+3. 最後，請將所有的測試方法全部都「獨立註解」掉（每個測試方法會被包括在一組註解標籤中），由於這些測試方法全部尚未實作，因此暫時都必須先被註解掉，這樣才不會被測試套件執行到。
+
+# Tech Stack Configuration
+1. Language Enviornment: Java 17
+2. Test library:
+    - JUnit 5
+    - Spring Boot Test (MockMVC)
