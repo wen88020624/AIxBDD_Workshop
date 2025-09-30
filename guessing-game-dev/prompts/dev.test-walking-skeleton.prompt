@@ -20,35 +20,37 @@
 
     ## 測試程式碼範例
     
-    ```java
-    @AutoConfigureMockMvc
-    public class HelloWorldEndToEndTest {
-    
-        @Autowired
-        private MockMvc mockMvc;
-    
-        @Test
-        public void testGreeting() throws Exception {
-            // Given
-            String name = "Johnny";
-    
-            // When
-            MvcResult result = mockMvc.perform(get("/api/hello")
-                    .param("name", name)
-                    .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andReturn();
-    
-            // Then
-            String responseContent = result.getResponse().getContentAsString();
-            assertEquals("Hello world 'Johnny'!", responseContent);
-        }
-    }
+    ```NestJs
+        describe('HelloWorld End-to-End Test', () => {
+            let app: INestApplication;
+
+            beforeAll(async () => {
+                const moduleFixture: TestingModule = await Test.createTestingModule({
+                imports: [AppModule], // 導入整個應用模組
+                }).compile();
+
+                app = moduleFixture.createNestApplication();
+                await app.init();
+            });
+
+            it('should return greeting message with name parameter', () => {
+                const name = 'Johnny';
+
+                return request(app.getHttpServer())
+                .get('/api/hello')
+                .query({ name }) // 傳遞 query 參數
+                .expect(200)
+                .expect(`Hello world '${name}'!`);
+            });
+
+            afterAll(async () => {
+                await app.close();
+            });
+        });
     ```
 
 # Tech Stack Configuration
-1. Language Enviornment: Java 17
-2. Web Framework: Spring Boot
+1. Language Enviornment: NodeJs
+2. Web Framework: NestJs
 3. Test library:
-    - JUnit 5
-    - Spring Boot Test
+    - Jest

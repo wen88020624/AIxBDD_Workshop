@@ -9,7 +9,6 @@
 3. 最後，請將所有的測試方法全部都「獨立註解」掉（每個測試方法會被包括在一組註解標籤中），由於這些測試方法全部尚未實作，因此暫時都必須先被註解掉，這樣才不會被測試套件執行到。
 
 # Tech Stack Configuration
-1. Language Enviornment: Java 17
+1. Language Enviornment: NestJs
 2. Test library:
-    - JUnit 5
-    - Spring Boot Test (MockMVC)
+    - Jest
