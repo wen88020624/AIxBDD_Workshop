@@ -8,6 +8,9 @@ export interface Game {
 
 export interface Player {
   name: string;
+  role: string;
+  secret?: string;
+  hasChanged?: boolean;
 }
 
 export interface JoinGameResponse {
