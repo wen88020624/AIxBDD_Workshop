@@ -20,58 +20,58 @@
 - 要嚴格區分一下 Given 和 When 兩者語意：
     - 單純「宣告變數」的程式碼不要歸類在 Given 區塊中，而是直接合併在 When 中，舉例：
         1. 很多時候你可能會想寫出底下這種 Given
-            ```java
+            ```NestJs
             // Given
-            String userId = "johnny"; // 給定我的 ID
-            int productId = "non-existingProductId"; // 給定我想買的 product id 不存在⋯⋯
+            const userId = "johnny"; // 給定我的 ID
+            const productId = "non-existingProductId"; // 給定我想買的 product id 不存在⋯⋯
             
             // When
-            MvcResult result = mockMvc.perform(post("/api/checkout")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"userId\":\"" + userId + "\",\"productId\":\"" + productId + "\"}"))
-                    .andReturn();
+            return request(app.getHttpServer())
+                .post('/api/checkout')
+                .send({ userId, productId })
+                .expect(404); // 假設不存在的商品會回傳 404，可依實際情況調整
             ...
             ```
         2. 但是這一段 Given 中其實除了宣告變數之外，並沒有真的透過任何操作來建構或是改變系統狀態，只是單純宣告變數而已。這時候我希望你能直接將 Given 合併進去 When 中，讓語法更簡潔：
-            ```java
+            ```NestJs
             // When
-            String userId = "johnny"; // 給定我的 ID
-            int productId = "non-existingProductId"; // 給定我想買的 product id 不存在⋯⋯
-            MvcResult result = mockMvc.perform(post("/api/checkout")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"userId\":\"" + userId + "\",\"productId\":\"" + productId + "\"}"))
-                    .andReturn();
+            const userId = "johnny"; // 給定我的 ID
+            const productId = "non-existingProductId"; // 給定我想買的 product id 不存在⋯⋯
+            return request(app.getHttpServer())
+                .post('/api/checkout')
+                .send({ userId, productId })
+                .expect(404); // 假設不存在的商品會回傳 404，可依實際情況調整
             ...
             ```
             其中可以看見，service 那一段描述就不必分類成 Given，就只是單純初始化而已。
-            如果有發現重複的初始化程式，放在測試類別的 @BeforeEach 區塊中。
+            如果有發現重複的初始化程式，放在測試類別的 beforeEach 區塊中。
         3. 在撰寫 When 和 Then 時，必須要參考該對應 API Endpoint 的 Request 參數（在 When 中作為參數） / Response 參數（在 Then 中驗證）。
 - 一個測試中，應該只能有一個 "When"，如果有多個 When，則應該把前面的 When 都轉成 Given，只留下一個 When 作為測試標的。
     - 舉例：
         - 不好的寫法：多個 When
-            ```java
-            String userId = "johnny";
+            ```NestJs
+            const userId = 'johnny';
             // When
             userService.register(userId); // 這應該是 Given
             // When
-            MvcResult result = mockMvc.perform(post("/api/orders")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"userId\":\"" + userId + "\",\"productId\":\"product123\"}"))
-                    .andReturn(); // 真正要測試的行為
+            const response = await request(app.getHttpServer())
+                .post('/api/orders')
+                .send({ userId, productId })
+                .expect(201); // 真正要測試的行為
             // Then
             assertNotNull(order);
             ```
             
         - 好的寫法：只有一個 When：
-            ```java
+            ```NestJs
             // Given
-            String userId = "johnny";
+            const userId = 'johnny';
             userService.register(userId); // 先註冊用戶作為前置條件
             // When
-            MvcResult result = mockMvc.perform(post("/api/orders")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"userId\":\"" + userId + "\",\"productId\":\"product123\"}"))
-                    .andReturn(); // 真正要測試的行為
+            const response = await request(app.getHttpServer())
+                .post('/api/orders')
+                .send({ userId, productId })
+                .expect(201); // 真正要測試的行為
             // Then
             assertNotNull(order);
             ```
