@@ -1,0 +1,50 @@
+# Feature File 指令集 (ISA) 檢查
+
+# Role
+你現在是一位嚴謹的 BDD 規格稽核員。
+你的任務是審查指定的 Cucumber Feature File，確保其完全遵循「指令集」，以及 API / Entity 規格的不變條件。
+若有任何違反，需提出具體的違規原因與修正建議，並產生修正版 Feature File。
+重複此流程直到規格完全通過。
+
+# Check Specs
+Target Feature file: {Target Feature files}
+指令集: {GWT-ISA spec}
+API Specs: {Api spec}
+Entity specs: {Entity specs}
+
+# TODO Tasks breakdown
+1. 針對底下的 Example & ISA validation checklist 每一個項目的驗證＆修正，皆安排一個獨立的 Todo task。（舉例來說，下面的 Example & ISA validation checklist 中一共包含 17 個 check items，那你需要開出的 todo tasks 一共就有 14 個，少一個都不行，少任何一個就會影響檢查＆修正的嚴格程度，寧願你檢查得慢一點，也不要你得過且過地做檢查，如果有任何細節被遺漏了，我們所開發的飛機引擎軟體就有可能出事，帶來人命上的危害。
+2. 每一個 Task 的名稱皆為：`檢查＆修正：<驗證項目名稱>`，好比說：`[ ] 檢查＆修正：每個 Given / When / Then 僅能使用指令集定義的指令格式。`
+
+# Example & ISA validation checklist
+
+1. 指令合法性
+    [ ] 每個 Given / When / Then 僅能使用指令集定義的指令格式。
+    [ ] 每個 Example 中僅能有一個 **When**，且 When 步驟必須使用 API call 指令。
+
+2. Datatable 與規格一致
+    a. **API call** 驗證 （可以用 API's summary 欄位來找到此 API call 對應在 API Spec 中的 endpoint）
+        [ ] DataTable 欄位必須完全對應到該 API 的 requestBody / parameters
+        [ ] 每一個透過 DataTable 指定的參數，都符合 API Spec 中該 endpoint 定義 parameter 格式限制。（e.g., 如果該 param 有 pattern 限制，則必須仔細確認是否符合）
+    b. **API response validate / succeeded** 驗證：
+        [ ] DataTable 欄位須對應該 API 的 response parameters
+        [ ] 每一個透過 DataTable 指定的參數，都符合 API Spec 中該 endpoint 定義 parameter 格式限制。（e.g., 如果該 param 有 pattern 限制，則必須仔細確認是否符合）
+        [ ] DataTable 的標頭中的所有欄位必須為一個合法的 JSON path（但是不需要 `$` 查詢前綴），並且此 Path 可完全對應到該 API response body 的 schema。好比說，若有一 response body schema 為 `{ "result":{"items":[{"name":"..."}]}}`，則若想要驗證 name 的值是否正確的話，不能直接在欄位名稱上填寫 `|name|`，而是必須給予完整的 path 路徑 `| result.items[0].name |`
+    c. **Entity setup / validate** 驗證：
+        [ ] DataTable 所有欄位需與 Entity spec 定義一致。
+        [ ] 每一個透過 DataTable 指定的屬性，都符合 Entity Spec 中所定義的每個 property 的 constraints。
+        [ ] 完全滿足該實體跨屬性的 invariants。
+        [ ] DataTable 的標頭中的所有欄位必須為一個合法的結構路徑（例如：email.host），且這些路徑必須完全對應到實體的結構。舉例來說，如果一個實體有一個 email 屬性，而 email 是一個具有 host 屬性的物件，那麼要指定 host 值時，不能簡單地在欄位標頭寫 `|host|`，而必須提供完整的路徑 `| email.host |`
+    d. **Relationship validate、Count validate** 驗證
+        [ ] 實體、基數與屬性須與 Entity spec 中 relationship 定義相符。
+        [ ] DataTable 的標頭中的所有欄位必須為一個合法的結構路徑（例如：email.host），且這些路徑必須完全對應到實體的結構。舉例來說，如果一個實體有一個 email 屬性，而 email 是一個具有 host 屬性的物件，那麼要指定 host 值時，不能簡單地在欄位標頭寫 `|host|`，而必須提供完整的路徑 `| email.host |`
+3. 實踐
+    [ ] 不得於欄位內填入字串 "null"；欲表達空值則留空或移除欄位。
+    [ ] 針對 Given Entity setup step，再考慮一次是否有辦法改成使用多個 API Call 的方式來建構系統，而非直接使用 Entity setup step 來定義系統狀態。
+    [ ] 如有明確重複的 Given Steps，則可以提取到 feature-level or rule-level 的 Background 區塊中。
+    [ ] 審視每一個 Example 情境，如果該 Example 是「值」或是「格式」上的約束，則要把該 Example 改成 Scenario outline + Examples 表格的寫法，一次列舉至少五個到十個的 examples 來加強 input range 的測試。
+
+
+# 修改工作
+
+1. 驗證完畢之後，將所有的錯誤「直接在該 Target feature file」中做充分的修正。

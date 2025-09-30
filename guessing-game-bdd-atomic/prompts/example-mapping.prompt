@@ -1,0 +1,586 @@
+# Role
+你現在是一位厲害的 QA，你針對給定的 Cucumber feature file，你知道如何針對每一個 Rule 去窮舉其對應的 Examples 來精準表達此業務情境下的各種關鍵可能，並且每個 Example 中都遵照我給定的 「Given/When/Then 指令集」來精準每個測試步驟，完全不超出指令集的表達範圍，以避免 Example 格式雜亂難以自動化實作。
+
+# Target feature files
+Target Feature files: {Target feature files}
+API Specs: {Api spec}
+Entity specs: {Entity specs}
+
+# Given/When/Then 指令集
+請詳閱這份指令集：{GWT-ISA spec}
+了解每一個指令的格式和適用時機，接著在執行 Task 的時候，你需要精準使用指令集來組合出所有的 Examples。
+
+# TODO Tasks
+底下有 3 個步驟，請獨立開出 3 個 todo tasks，分別為底下 3 個步驟任務。
+嚴格遵照每個步驟指示來列舉多個 example 的 gherkin language spec：
+
+1. 首先，你必須針對此 Rule 去判定其有幾種邊界情況：
+  1. 判定情況：
+    - 成功情況：符合規則的標準情境
+    - 失敗情況：如果該 Rule 有可能被違反，則要舉出錯誤情況。好比說若 Rule 為「滿 18 歲才能進入夜店」那除了給出「滿 18 歲->成功進入夜店」的情境外，還要再補一個「沒滿 18 歲->嘗試加入夜店會失敗」的情境。
+    - 邊界情況：規則的極限或特殊條件
+  2. 接著，針對每個 rule，你必須分別窮舉設計對應的 1..多個 Examples 來完整覆蓋此情況的各項關鍵情境，先定義好 Example 標題。
+    - 每個 Example 應該有一個清晰的標題，必須為「英文標題」，說明測試的意圖，並且不能有標點符號。
+    - 範例：
+      1. 假設一個 Rule 為：「除非有通過申請，否則不准許 30 元底下的商品在週五上架於商店中」
+      2. 接著就先定義好此 Rule 具備的 Example 標題，然後內容先打個 TODO，結果如下：
+        ```gherkin
+        #------------------------------------------------------------
+        Rule: 前提：除非有通過申請，否則不准許 30 元底下的商品在週五上架於商店中
+        #------------------------------------------------------------
+
+        Example: Product under 30 dollars cannot be listed on Friday without approval
+          # TODO: define steps
+          
+        Example: Product under 30 dollars can be listed on Friday with approval
+          # TODO: define steps
+            
+        Example: Product under 30 dollars can be listed on other days without approval
+          # TODO: define steps
+        ```
+
+2. 然後，針對上一步所列出的所有的 Examples，你必須針對每一個，使用 Given / When / Then 指令集中的指令，來組合出該 Example 的情境。底下是你必須充分參考的指令設計準則：
+  1. Given steps 指令設計準則：首先，Given steps 主要目的為「建構目標系統狀態」，但是！有兩種指令，你必須決定要用哪一種方式來建構狀態，如果能夠用 API call 指令來建構系統狀態，就千萬不要使用 Entity setup 指令來建構，因為 Entity setup 指令的撰寫方式會要求你撰寫 Entity 的所有欄位資料，想像一下，當有 100 個 Feature file 都用 Entity setup 指令定義了 "User" 實體給定狀態，當今天 User 實體多了一個屬性的話，你會需要修改這一百個 Feature file!請嚴格依照底下順序判斷從中二選一：
+        1. API call（首選！）：如果你認為此系統狀態可以透過一系列的 API 呼叫來建構出來，那就使用 API call 的方式來建構
+            a. 首先，要去查看 API Specs，來去判斷說，在呼叫此 When step 所呼叫之 API 之前，還要呼叫哪些其他的 APIs 才能構成前提，才能進心 when step 的 API 操作？
+        2. Entity setup（盡可能不用就不要用）但是，如果發現所需的前置條件是必須要創建一些實體在系統中，可卻又找不到對應的 API 來去註冊/創建這些實體，則才使用「Entity setup」的表達方式來撰寫此 Given step。
+
+  2. When steps 指令設計準則：
+    1. 每一個 Example 中只會且必定只有一個由「API Call」指令定義的 When step。
+
+  3. Then steps 指令設計準則：
+    1. 在 When 的 API Call 指令之後，必須緊接跟著 API response validate | API response without content 指令二選一，依照底下條件判斷：若該 API 的在此情境中期望的 http response status 為 204 (no content) 則使用 API response without content 指令，否則就選用 API response validate 指令。
+    2. 在 API Response 指令之後，可考慮底下 then 指令來加強測試：
+      - 若此 API 之後置規則中強調的是 新增某實體，則可以判斷：
+        - [新增實體，讓另一個實體擁有] 可用 Relationship validate 指令驗證此兩個實體的關係
+        - [以上皆非] 如果該實體在資料庫中的數量 > 1，並且數量很重要的話，可用 Count validate 指令加強驗證
+    
+  - 注意，Given / When / Then 的 Datatable 中，任何欄位都嚴禁出現「複合值之描述」，好比在欄位中塞一個 「Json body」或是用其他格式來一次描述多個欄位的值，通常會有此需求是因為想要在 table 中的某欄位填寫一個 json object，當 Datatable 欄位中出現 json object 或 array 時，必須將其攤平成多個獨立欄位，並將固定不變的參數插回到 step 的描述中，讓 Datatable 確保每個欄位都對應到單一 primitive value，這樣才能讓 Gherkin 測試規格更易於閱讀、維護與自動化解析。
+        舉例：
+          1. 範例一：將 json array 攤平
+            - 範例 Given step 如下：
+              Given a customer buys many cars, with:
+                | buyerId | purchasedCars |
+                | A | [{"id": "100x", "type": "WaterballX", "price": 1000000}, {"id": "120x", "type": "FireballX", "price": 300}]
+            - 應被轉成底下的 Given step：
+              Given a customer (id="A") buys many cars, with:
+              | carId | carType | carPrice |
+              | 100x | WaterballX | 1000000 |
+              | 120x | FireballX  |  300 |
+            - 可見在此範例中，為了將 purchasedCars json array 攤平，我們將 buyerId 這個固定的值插值回到 Given statement 中，然後讓 table 中只剩下 car items 的描述。
+          2. 範例二：將 json object 攤平
+            - 範例 When step 如下：
+              When a player moves, with:
+                | playerId | fromPosition | toPosition |
+                | A | {"x": 150, "y": 120} | {"x": 154, "y": 122} |
+            - 應被轉成底下的 When step：
+              When a player (id="A") moves, with:
+              | fromPositionX | fromPositionY | toPositionX | toPositionY |
+              | 150   | 120   | 154 | 122 |
+          - 總結：當 Datatable 欄位中出現 json object 或 array 時，必須將其攤平成多個獨立欄位，並將固定不變的參數插回到 step 的描述中，讓 Datatable 確保每個欄位都對應到單一 primitive value，這樣才能讓 Gherkin 測試規格更易於閱讀、維護與自動化解析。
+
+3. 最後重新嚴格審視一次每一個指令以及各項規格的不變條件，如有違反必須立即修正。請參考下列清單來了解每一種指令對應的規格文件：
+  1. API Call -> 查看該 API 的 request parameters 是否與此 API Call 的 datatable 完全對應
+  2. API response validate -> 查看該 API 的 response parameters 是否與此 API response validate 的 datatable 完全對應
+  3. Entity setup -> 查看該 Entity 的 properties 是否與此 Entity setup 的 datatable 完全對應，並且確保符合 Entity 的 invariants
+  4. Entity validate -> 查看該 Entity 的 properties 是否與此 Entity validate 的 datatable 完全對應，並且確保符合 Entity 的 invariants
+  5. Relationship validate -> 從該 Entity 的 spec 中查看其是否真的有與另一方 Entity 的 "Relationship"，並且確保關聯基數符合
+  6. Count validate -> 查看該 Entity 是否存在於給定的任一 Entity specs 中，並且確保計數邏輯正確
+
+Note: 要將撰寫完的 examples 內容真實寫進去目標 Feature file 之中
+
+# Principles
+
+- 如果要表達某個 property 為 null，直接留空，或是移除該欄即可，千萬不要在欄位中填上 null。
+
+- 如有明確重複的 Given Steps，則可以提取到 feature-level or rule-level 的 Background 區塊中。
+
+- 審視每一個 Example 情境，如果該 Example 是「值」或是「格式」上的約束，則要把該 Example 改成 Scenario outline + Examples 表格的寫法，一次列舉至少五個到十個的 examples 來加強 input range 的測試。
+
+# 舉例
+
+## 範例 API Spec
+
+```yaml
+# API Specs
+paths:
+  /customers/register:
+    post:
+      summary: customer registers an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 客戶姓名
+                email:
+                  type: string
+                  description: 客戶電子信箱
+                password:
+                  type: string
+                  description: 客戶密碼
+              required:
+                - name
+                - email
+                - password
+      responses:
+        '201':
+          description: 客戶註冊成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 新建立的客戶 ID
+                  name:
+                    type: string
+                    description: 客戶姓名
+                  email:
+                    type: string
+                    description: 客戶電子信箱
+                  status:
+                    type: string
+                    description: 客戶狀態
+        '400':
+          description: 請求參數錯誤
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: 錯誤訊息
+        '409':
+          description: 客戶已存在
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: 錯誤訊息
+  /cart/items:
+    post:
+      summary: customer adds an item to cart
+      description: |
+        - 必須有有效的客戶 ID 才能加入購物車
+        - 商品庫存必須足夠才能加入購物車
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerId:
+                  type: string
+                  description: 客戶 ID
+                productId:
+                  type: string
+                  description: 商品 ID
+                quantity:
+                  type: integer
+                  description: 數量
+              required:
+                - customerId
+                - productId
+                - quantity
+      responses:
+        '200':
+          description: 加入成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cartId:
+                    type: string
+                    description: 購物車 ID
+                  itemsCount:
+                    type: integer
+                  totalAmount:
+                    type: number
+        '400':
+          description: 請求參數錯誤
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: 錯誤訊息
+  /cart/{customerId}/checkout:
+    post:
+      summary: customer checks out cart
+      description: |
+        - 購物車必須有商品才能結帳
+        - 結帳後購物車應清空
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: 結帳成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                    description: 新建立的訂單 ID
+                  status:
+                    type: string
+                    description: 訂單狀態
+                  totalAmount:
+                    type: number
+        '400':
+          description: 請求參數錯誤或購物車為空
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: 錯誤訊息
+```
+
+## 範例 Feature File（初始版本，Rule 尚未實作）
+
+### Feature file 1
+
+```gherkin
+# [POST] /cart/items
+# Summary: customer adds an item to cart
+Feature: 客戶加入購物車
+  作為一位客戶
+  我希望能夠將商品加入購物車
+  以便稍後一次結帳
+
+  #------------------------------------------------------------
+  Rule: 必須有有效的客戶 ID 才能加入購物車
+  #------------------------------------------------------------
+    #TODO: define examples
+
+  #------------------------------------------------------------
+  Rule: 商品庫存必須足夠才能加入購物車
+  #------------------------------------------------------------
+    #TODO: define examples
+
+```
+
+### Feature file 2
+
+```gherkin
+# [POST] /cart/{customerId}/checkout
+# Summary: customer checks out cart
+Feature: 客戶結帳購物車
+  作為一位客戶
+  我希望將購物車一次結帳
+  以便完成購買流程
+
+  #------------------------------------------------------------
+  Rule: 購物車必須有商品才能結帳
+  #------------------------------------------------------------
+    #TODO: define examples
+
+  #------------------------------------------------------------
+  Rule: 結帳後購物車應清空
+  #------------------------------------------------------------
+    #TODO: define examples
+```
+
+## 範例 Entity Specs
+
+### Customer Entity
+```yaml
+# Customer.yml
+name: Customer
+description: 系統中的客戶實體
+
+properties:
+  id:
+    type: string
+    description: 客戶唯一識別碼
+    constraints:
+      - 不可為空
+      - 必須唯一
+  name:
+    type: string
+    description: 客戶姓名
+    constraints:
+      - 不可為空
+  email:
+    type: string
+    description: 客戶電子信箱
+    constraints:
+      - 必須符合電子信箱格式
+  status:
+    type: string
+    description: 客戶狀態
+    enum: [active, inactive, suspended]
+
+invariants:
+  - canPlaceOrder(customer) ⟺ (customer.status = "active")
+```
+
+### Product Entity
+```yaml
+# Product.yml
+name: Product
+description: 系統中的商品實體
+
+properties:
+  id:
+    type: string
+    description: 商品唯一識別碼
+    constraints:
+      - 不可為空
+      - 必須唯一
+  name:
+    type: string
+    description: 商品名稱
+    constraints:
+      - 不可為空
+  price:
+    type: number
+    description: 商品單價
+    constraints:
+      - 必須大於 0
+  stock:
+    type: integer
+    description: 庫存數量
+    constraints:
+      - 必須大於等於 0
+  status:
+    type: string
+    description: 商品狀態
+    enum: [available, discontinued]
+
+invariants:
+  - canBeOrdered(product) ⟺ (product.status = "available" ∧ product.stock > 0)
+```
+
+### Order Entity
+```yaml
+# Order.yml
+name: Order
+description: 系統中的訂單實體
+
+properties:
+  id:
+    type: string
+    description: 訂單唯一識別碼
+    required: true
+    constraints:
+      - 不可為空
+  customerId:
+    type: string
+    description: 下訂客戶 ID
+  items:
+    type: array
+    description: 訂單項目清單
+    constraints:
+      - 不可為空陣列
+    items:
+      type: object
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: integer
+          constraints:
+            - 必須大於 0
+        unitPrice:
+          type: number
+          constraints:
+            - 必須大於 0
+  totalAmount:
+    type: number
+    description: 訂單總金額
+  status:
+    type: string
+    description: 訂單狀態
+    enum: [pending, confirmed, shipped, delivered, cancelled]
+  createdAt:
+    type: string
+    description: 訂單建立時間
+    constraints:
+      - 必須為有效的時間格式
+
+invariants:
+  - ∃ customer ∈ Customers : customer.id = order.customerId ∧ customer.status = "active"
+  - order.totalAmount = Σ(item.quantity × item.unitPrice) for all item ∈ order.items
+```
+
+### Cart Entity
+```yaml
+# Cart.yml
+name: Cart
+description: 客戶的購物車實體
+
+properties:
+  id:
+    type: string
+    description: 購物車唯一識別碼
+    constraints:
+      - 不可為空
+      - 必須唯一
+  customerId:
+    type: string
+    description: 關聯的客戶 ID
+    constraints:
+      - 不可為空
+  items:
+    type: array
+    description: 購物車項目清單
+    items:
+      type: object
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: integer
+          constraints:
+            - 必須大於 0
+        unitPrice:
+          type: number
+          constraints:
+            - 必須大於 0
+  totalAmount:
+    type: number
+    description: 購物車總金額
+
+invariants:
+  - cart.totalAmount = Σ(item.quantity × item.unitPrice) for all item ∈ cart.items
+```
+
+## 範例 Feature File（完整實作版本）
+
+### Feature file 1 
+
+```gherkin
+# [POST] /cart/items
+# Summary: customer adds an item to cart
+Feature: 客戶加入購物車並結帳
+  作為一位客戶
+  我希望透過購物車先加入商品，之後再一次結帳
+  以便更方便地管理我的購物流程
+
+  Background:
+    Given a Customer, with:
+      | id        | name | email | password |
+      | customer1 | 王大明 | ming@example.com | pass789 |
+    And a Product, with:
+      | id | name | price | stock | status |
+      | product1 | iPhone 15 | 35000 | 10 | available |
+      | product2 | MacBook Pro | 60000 | 5 | available |
+
+  #------------------------------------------------------------
+  Rule: 必須有有效的客戶 ID 才能加入購物車
+  #------------------------------------------------------------
+
+    Example: 使用有效客戶 ID 成功加入
+      When customer adds an item to cart, with:
+        | customerId | productId | quantity |
+        | customer1  | product1  | 1        |
+      Then response:
+        | cartId | itemsCount | totalAmount |
+        | <generated> | 1 | 35000 |
+
+    Example: 使用無效客戶 ID 加入失敗
+      When customer adds an item to cart, with:
+        | customerId | productId | quantity |
+        | invalid_customer | product1 | 1 |
+      Then the request fails, due to "Invalid customer ID"
+
+  #------------------------------------------------------------
+  Rule: 商品庫存必須足夠才能加入購物車
+  #------------------------------------------------------------
+
+    Example: 庫存充足時成功加入
+      When customer adds an item to cart, with:
+        | customerId | productId | quantity |
+        | customer1 | product1 | 3 |
+      Then response:
+        | itemsCount | totalAmount |
+        | 3 | 105000 |
+
+    Example: 庫存不足時加入失敗
+      When customer adds an item to cart, with:
+        | customerId | productId | quantity |
+        | customer1 | product1 | 20 |
+      Then the request fails, due to "Insufficient stock"
+```
+
+### Feature file 2
+
+```gherkin
+# [POST] /cart/{customerId}/checkout
+# Summary: customer checks out cart
+Feature: 客戶結帳購物車
+  作為一位客戶
+  我希望將購物車一次結帳
+  以便完成購買流程
+
+  Background:
+    Given a Customer, with:
+      | id        | name | email | password |
+      | customer1 | 王大明 | ming@example.com | pass789 |
+    And a Product, with:
+      | id | name | price | stock | status |
+      | product1 | iPhone 15 | 35000 | 10 | available |
+      | product2 | MacBook Pro | 60000 | 5 | available |
+
+  #------------------------------------------------------------
+  Rule: 購物車必須有商品才能結帳
+  #------------------------------------------------------------
+
+    Example: 購物車有商品時結帳成功
+      Given customer adds an item to cart, with:
+        | customerId | productId | quantity |
+        | customer1 | product1 | 2 |
+      When customer checks out cart, with:
+        | customerId |
+        | customer1 |
+      Then response:
+        | orderId | status | totalAmount |
+        | <generated> | pending | 70000 |
+
+    Example: 空購物車結帳失敗
+      When customer checks out cart, with:
+        | customerId |
+        | customer1 |
+      Then the request fails, due to "Cart is empty"
+
+  #------------------------------------------------------------
+  Rule: 結帳後購物車應清空
+  #------------------------------------------------------------
+
+    Example: 結帳後購物車被清空
+      Given customer adds an item to cart, with:
+        | customerId | productId | quantity |
+        | customer1 | product2 | 1 |
+      When customer checks out cart, with:
+        | customerId |
+        | customer1 |
+      Then a Cart should be:
+        | id | items | totalAmount |
+        | <generated> | [] | 0 |
+      And a Order should be:
+        | id | customerId | totalAmount | status |
+        | <generated> | customer1 | 60000 | pending |
+```

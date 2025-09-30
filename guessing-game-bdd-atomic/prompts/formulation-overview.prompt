@@ -1,0 +1,185 @@
+# Role
+你現在是一位自動化測試的工程師，你精通行為驅動開發和 Cucumber 技術套件。
+你熟悉如何將業務需求與測試計畫轉換為清晰、可維護的 Cucumber Feature files 大架構（只有 Feature 和 Rules)。
+
+# Context
+1. API Spec：<api spec>
+
+# Task
+1. 請閱讀測試計畫檔案 API Spec，此檔案描述著此系統的多個 API Endpoint （代表一個功能），以及每個 API 功能底下在執行時須 100% 嚴格遵守的規則 (Rules, defined in the description field)。
+2. 你需要以 Cucumber 定義的 Feature file Gherkin Language 格式來以 rule-based 的方式（Feature -> Rules -> Examples) 去建立每種 API Endpoint 的驗收標準：
+  1. 每個功能 (API Endpoint) 為一個獨立的 feature file （稱之為一個 API Feature file）。
+  2. Feature file 的標頭要使用註解標注此 Feature 其對應 API 的兩個重要資訊：
+    - API Endpoint: [<HTTP Method>] <url> 
+    - API's summary: 此對應 API 的 summary 欄位，會做為此 feature 中所有 when step 的基本句型
+  3. Feature file 的名字，必須完全等同於該 API 的 summary，另外，不必撰寫 user story（身為 xxx...）。
+  4. 在每個 API Feature file 中，參考 API Spec 下此 API 的 description 來撰寫 Rules：
+    1. 此 description 為一個 markdown，其中會分為兩個區塊：「前置」和「後置」。
+    2. 前置區塊中包含多條前置條件的 Rules，代表此 Feature 執行合法的前提
+    3. 後置區塊中包含多條此 Feature 執行完之後應保證實現的後置條件的 Rules 
+    4. 請將每一條 前置&後置區塊中的 rules 依序寫進此 Feature file 中，撰寫時，依照此格式撰寫：`<(前置 | 後置） - <rule statement>`。
+      - 範例：
+        1. 一條 API description 如下：
+          ```
+          ### 前置
+          - 吃飯前要洗手
+          ### 後置
+          - 吃完飯要洗碗
+          ```
+        2. 其對應的兩條 Rules 分別撰寫方式如下：
+          1. `Rule: 前置 - 吃飯前要洗手`
+          2. `Rule: 後置 - 吃完飯要洗碗`
+    5. 每個 Rule 底下的 examples 先不實作，留下一個 `#TODO: define examples` 註解。
+    6. 留意，在前置＆後置區塊的清單中，清單的「第一層」項目才是 Rules，如果清單的項目有子清單（縮排進去）的話，那這個項目包含其子清單都會被歸納在該條 Rule 之中（格式：除該 Rule 第一行以外都用註解處理，但要隸屬於該 Rule）。
+3. 為每個 API 功能分別產生一份 Feature file，儲存至 <feature-name>.feature，其中，<feature-name> 為該 feature 之 API summary 但是用底線取代空白（e.g., a_user_registers_an_account.feature)。所有 features 放在 features/ 目錄中（如果沒有就創建此目錄）
+
+# 範例
+1. 以下是「登入系統」的 API 格式：
+```
+paths:
+  /login:
+    post:
+      summary: "the user logs in account"
+      description: |
+        ### 前置
+        - Email 和 密馬必須符合格式要求
+          * Email 格式必須符合標準 email 格式規範
+          * 密碼不可為空值，且長度介於 6-12 字元之間
+        - 使用者必須曾經成功註冊
+        - 密碼必須與資料庫中儲存的密碼相符
+        ### 後置
+        - 登入成功後返回有效的存取令牌（access token）
+        - 連續登入失敗每天超過限制次數 3 次時應鎖定帳號
+        - 系統會記錄每一次登入嘗試的時間和來源 IP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 使用者的電子郵件地址
+                  example: "user@example.com"
+                password:
+                  type: string
+                  minLength: 1
+                  description: 使用者登入密碼
+                  example: "mySecurePassword123"
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: 登入成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: 存取令牌
+                  tokenType:
+                    type: string
+                    enum: [Bearer]
+                    description: 令牌類型
+                  expiresIn:
+                    type: integer
+                    description: 令牌有效期（秒）
+                  userId:
+                    type: string
+                    description: 使用者唯一識別碼
+                  message:
+                    type: string
+                    example: "登入成功"
+        '400':
+          description: 請求參數錯誤
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [missing_email, missing_password, invalid_email_format]
+                  message:
+                    type: string
+                    example: "缺少 email 或密碼"
+        '401':
+          description: 驗證失敗
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [account_not_found, incorrect_password]
+                  message:
+                    type: string
+                    example: "帳號不存在或密碼錯誤"
+        '423':
+          description: 帳號已鎖定
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [account_locked]
+                  message:
+                    type: string
+                    example: "帳號已被鎖定，請稍後再試"
+                  lockDuration:
+                    type: integer
+                    description: 鎖定剩餘時間（秒）
+```
+
+2. 每個 API Endpoint 會對應到一個 Feature file，因此，會為上述的 login API 產生出對應的 Feature file 如下：
+
+## login.feature
+
+```feature
+# [POST] /login
+# Summary: the user logs in account
+Feature: 使用者登入帳號
+  作為一位系統使用者
+  我希望能夠登入我的帳號
+  以便使用系統的功能
+
+  #------------------------------------------------------------
+  Rule: 前置 - Email 和 密馬必須符合格式要求
+    * Email 格式必須符合標準 email 格式規範
+    * 密碼不可為空值，且長度介於 6-12 字元之間
+  #------------------------------------------------------------
+    #TODO: define examples
+
+  #------------------------------------------------------------
+  Rule: 前置 - 使用者必須曾經成功註冊
+  #------------------------------------------------------------
+    #TODO: define examples
+
+  #------------------------------------------------------------
+  Rule: 前置 - 密碼必須與資料庫中儲存的密碼相符
+  #------------------------------------------------------------
+    #TODO: define examples
+
+  #------------------------------------------------------------
+  Rule: 後置 - 登入成功後返回有效的存取令牌（access token）
+  #------------------------------------------------------------
+    #TODO: define examples
+
+  #------------------------------------------------------------
+  Rule: 後置 - 連續登入失敗每天超過限制次數 3 次時應鎖定帳號
+  #------------------------------------------------------------
+    #TODO: define examples
+
+  #------------------------------------------------------------
+  Rule: 後置 - 系統會記錄每一次登入嘗試的時間和來源 IP
+  #------------------------------------------------------------
+    #TODO: define examples
+```

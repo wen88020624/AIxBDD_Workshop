@@ -1,0 +1,42 @@
+# Task
+請你嚴格遵照「行為驅動開發 (BDD)」的方式，來完成此指定 feature file 中所有驗收情境的開發。
+不可同時進行 BDD 開發流程中多個步驟也不能略過任何一步驟，必須一步一步扎實執行並確認每一步的結果。
+
+# Context
+
+1. Target feature files: <Target feature files>
+2. API Specs: <API Specs>
+
+## Tech Stack
+1. Language Env：Java
+2. BDD Test framework: Cucumber
+3. Web: Sprint boot
+4. Testing:
+    1. DB: h2 DB
+    2. RESTFul Testing Tool: MockMvc
+    3. ORM: Spring Data JPA
+3. Native test framework: Junit5
+
+## Application Environment
+1. App 類型：Java Sprint Boot Web 後端程式碼
+2. 此 feature file 中的所有邏輯將被實作在 GuessingGameService 中，並且用 GuessingGameController 來實作 API Endpoints。
+3. Source code root: src/main/java/
+4. 使用 Maven wrapper 來執行 Maven 指令
+5. Feature file 對應的測試層級：E2E Test (使用 Sprint Boot Test / MockMvc)
+
+# BDD 開發流程
+1. 先建置出 cucumber walking skeleton  - 可順利運行 cucumber 以及至少一個 scenario ，確認至少有一個 test case 被 測試框架執行到。
+
+2. 嚴格遵守 BDD 以及最小增量原則來開發所有程式碼，針對所有 scenario，一次開發一個 scenario，依序進行：
+    A. 一次選擇一個 scenario 實作，除此 scenario 之外的測試全部都先上 @ignore 註解在該 Scenario spec 之上（這樣才能在 mvn test 時 filter off 掉）。撰寫此 scenario 對應的 Steps (given, when, then)、開啟相關類別，但是每個類別的行為都不實作，並且執行測試，確認測試失敗 (test fail)，並且測試失敗的原因並非框架層級的錯誤，而是期望的「值」上的錯誤。嚴格確認這步驟完成後才能進行下一步的實作。
+    B. 為了通過上一步所撰寫的測試程式碼，請實作相關類別所需的程式碼，並確認能讓所有的測試程式碼都通過。請嚴格確認有執行到測試程式碼，從 test report 中覆述一次目前 test passed 的數量。
+    C. 遵守 clean code 原則，思考是否要重構每個類別的內部程式碼，如果必要重構的話，在重構完成之後，再執行一次測試，確保所有測試仍然通過，否則需修正邏輯直到測試全數通過。
+
+# BDD 開發原則
+1. 絕對不可以質疑 Feature file 內的規格，也不可以篡改這份規格，規格內的內容保證都是正確的，你必須要實作出能夠通過規格測試的程式碼。
+2. 絕對不可以依賴注入 Service 類別到 StepDefinitions 類別中來做測試，測試的層級是 End to end test，必須使用 MockMVC 做 API call 以及直接依賴注入 Repository 去創建實體。
+
+# 驗收標準
+
+1. 你必須實現指定 feature file 內的所有 scenario 功能，不必詢問我是否要繼續開發下一個 scenario，在實作過程中任何的程式設計決策也不必經過我的同意，無論是執行測試工具還是創建任何檔案都不必經過我的同意。
+2. 只有在你完成實作完指定 Feature file 內的所有 Scenario，並且執行 `./mvnw test -Dcucumber.filter.tags="not @ignore"` 後，從 Test Report 中的字樣確認所有指定 scenarios 都 Test passed （而不是 failed / skipped），才算是完成任務，屆時才能停止工作。

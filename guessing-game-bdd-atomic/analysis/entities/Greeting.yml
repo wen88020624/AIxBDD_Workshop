@@ -1,0 +1,31 @@
+name: Greeting
+description: "問候實體，記錄使用者的問候資訊"
+primary_key: 
+  - id
+properties:
+  id:
+    type: string
+    description: "問候記錄的唯一識別碼"
+    example: "g123"
+    constraints:
+      - "通常為自動產生的唯一識別碼"
+  content:
+    type: string
+    description: "問候的內容訊息"
+    example: "Hello world, Johnny."
+    constraints:
+      - "不能為空白"
+  name:
+    type: string
+    description: "被問候的使用者名稱"
+    example: "Johnny"
+    constraints:
+      - "不能為空白"
+  createdAt:
+    type: datetime
+    description: "問候建立的時間"
+    example: "2023-08-02T14:30:00Z"
+
+invariants:
+  # 名字不能為空白
+  - name.trim() != ""

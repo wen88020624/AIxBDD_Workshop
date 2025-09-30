@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: Greeting
+  version: 1.0.0
+  description: Example API specification for BDD Walking skeleton
+
+paths:
+  # BDD's walking 示範用 API endpoint
+  /greeting:
+    get:
+      summary: he is greeting
+      description: |
+        ### 前提
+        - 使用者可以使用名字進行問候
+        - 一分鐘內最多問候兩次
+
+        ### 後置
+        - 問候之後，會新增一筆問候訊息

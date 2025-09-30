@@ -1,0 +1,51 @@
+name: Game
+description: "遊戲實體，代表一個 1A2B 遊戲的狀態和資訊"
+primary_key:
+  - gameId
+properties:
+  gameId:
+    type: string
+    description: "遊戲的唯一識別碼"
+    example: "ABC"
+    pattern: "^[a-zA-Z0-9]{3,5}$"
+  status:
+    type: string
+    description: "遊戲當前狀態"
+    enum:
+      - "Waiting for player"    # 等待玩家加入
+      - "Setting secret"        # 設定秘密數字階段
+      - "Guessing"             # 猜數字階段
+      - "Ended"                # 遊戲結束
+    example: "Waiting for player"
+  winnerId:
+    type: string
+    description: "獲勝玩家的 ID（僅當遊戲結束時有值）"
+    enum:
+      - "P1"
+      - "P2"
+    nullable: true
+
+relationships:
+  - entity: Player
+    type: one-to-many
+    description: "一個遊戲可以有兩個玩家"
+    constraints:
+      - 最多兩位玩家
+  - entity: GuessResult
+    type: one-to-many
+    description: "一個遊戲可以有多個猜測結果"
+
+invariants:
+  # 基本狀態約束
+  - status == "Ended" <=> winnerId != null
+  
+  # 玩家數量與狀態的關係
+  - status == "Waiting for player" => |players| < 2
+  - status != "Waiting for player" => |players| == 2
+  
+  # 猜測結果與狀態的關係
+  - status ∈ {"Waiting for player", "Setting secret"} => |guessResults| == 0
+  - |guessResults| > 0 => status ∈ {"Guessing", "Ended"}
+  
+  # 遊戲結束條件
+  - ∃ result ∈ guessResults: result.result == "4A0B" => status == "Ended"

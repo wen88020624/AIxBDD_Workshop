@@ -1,0 +1,92 @@
+instructions:
+  - name: API call
+    format: <API's summary>, with:\n<DataTable>
+    constraints:
+      - the API's summary must be a valid summary of the API endpoint
+      - the DataTable's parameters must match the API's request parameters (URL parameters + body parameters)
+    example: |
+      a player joins a game, with:
+        | gameId | playerName |
+        | G99    | Sam        |
+    situation: to invoke the API endpoint with the given parameters
+
+  - name: API response validate
+    format: response:\n<DataTable>
+    constraints:
+      - the response DataTable's parameters must match the API's response parameters
+      - each parameter specified in the DataTable must match the format constraints defined in the API spec for the corresponding parameter
+      - All column headers in the DataTable must be valid schema structure paths (e.g., result.items[0].name), and these paths must fully correspond to the API response body schema. For example, if a response body schema is `{ "result":{"items":[{"name":"..."}]}}`, then to validate if the name value is correct, you cannot simply write `|name|` in the column header, but must provide the complete path `| result.items[0].name |`
+    example: |
+      response:
+        | game.id | player.name |
+        | G99    | Sam        |
+    situation: to validate the response of the API endpoint
+
+  - name: API response without content
+    format: succeeded
+    example: succeeded
+    situation: to validate the 204 (no content) response of the API endpoint
+
+  - name: Entity setup
+    format: a <entity>, with:\n<DataTable>
+    constraints:
+      - <entity> must be a valid entity defined in a entity spec
+      - the entity's properties defined in the DataTable must match the entity spec
+      - All column headers in the DataTable must be valid schema structure paths (e.g., email.host), and these paths must fully correspond to the entity's schema. For example, if an entity has an email property, where email is an object with a host property, then to specify the host value, you cannot simply write `|host|` in the column header, but must provide the complete path `| email.host |`
+    example: |
+      a User, with:
+        | id | email.host | email.username | password | name.first | name.last |
+        | 1 | example.com | john-doe | 123456 | John | Doe |
+    situation: to create the entity with the given parameters
+
+  - name: Entity validate
+    format: the <entity> should be:\n<DataTable>
+    constraints:
+      - <entity> must be a valid entity defined in a entity spec
+      - the entity's properties defined in the DataTable must match the entity spec
+      - All column headers in the DataTable must be valid schema structure paths (e.g., email.host), and these paths must fully correspond to the entity's schema. For example, if an entity has an email property, where email is an object with a host property, then to specify the host value, you cannot simply write `|host|` in the column header, but must provide the complete path `| email.host |`
+    example: |
+      the User should be:
+        | id | email.host | email.username | password | name.first | name.last |
+        | 1 | example.com | john-doe | 123456 | John | Doe |
+    situation: to validate the entity in the database with the given parameters to match the entity's properties
+
+  - name: Relationship validate
+    format: the <entity 1> (ID="<id>") has <number> <entity 2>:(\n<DataTable>)?
+    constraints:
+      - <id> must be a valid id of the <entity 1>
+      - <entity 1> must be a valid entity defined in a entity spec
+      - <entity 2> must be a valid entity defined in a entity spec
+      - the entity's properties defined in the DataTable must match the entity spec
+      - All column headers in the DataTable must be valid schema structure paths (e.g., email.host), and these paths must fully correspond to the entity's schema. For example, if an entity has an email property, where email is an object with a host property, then to specify the host value, you cannot simply write `|host|` in the column header, but must provide the complete path `| email.host |`
+    example: |
+      the User (ID="1") has 2 Orders:
+        | order.id |
+        | 1001 |
+        | 1002 |
+    situation: to validate the Relationship of the entity in the database with the given parameters to match the entity's properties
+
+  - name: Count validate
+    format: there are <number> <entity>(:\n<DataTable>)?
+    constraints:
+      - <entity> must be a valid entity defined in a entity spec
+      - the <number> must be a valid relationship multiplicity number defined in the entity spec
+      - All column headers in the DataTable must be valid schema structure paths (e.g., email.host), and these paths must fully correspond to the entity's schema. For example, if an entity has an email property, where email is an object with a host property, then to specify the host value, you cannot simply write `|host|` in the column header, but must provide the complete path `| email.host |`
+    example: |
+      there are 2 orders:
+        | status |
+        | CANCELLED |
+    situation: to validate the count of the entity that has the given properties
+
+  - name: Request fails with reason
+    format: the request fails, due to "<reason>"
+    constraints:
+      - <reason> must be a valid reason that the request fails
+    example: |
+      the request fails, due to "Invalid game ID format"
+    situation: to validate the reason that the request fails
+
+  - name: Request fails without reason
+    format: the request fails
+    example: the request fails
+    situation: just validate that the request has failed
