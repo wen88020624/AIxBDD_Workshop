@@ -11,21 +11,24 @@ datasource db {
 }
 
 model Game {
-  id        String   @id
-  status    String
+  id      String   @id
+  status  String
+  winner  String?
+  players Player[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  players   Player[]
 }
 
 model Player {
-  id         Int      @id @default(autoincrement())
-  name       String
-  role       String
-  secret     String?
-  gameId     String
-  game       Game     @relation(fields: [gameId], references: [id])
-  hasChanged Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  gameId          String
+  role            String
+  name            String
+  secret          String?
+  hasChangedSecret Boolean @default(false)
+  game            Game     @relation(fields: [gameId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([gameId, role])
 }

@@ -1,27 +1,27 @@
-import { GameStatus } from './game.enum';
+import { GameStatus, PlayerRole } from './game.enum';
 
-export interface Game {
-  id: string;
-  players: Player[];
-  status: GameStatus;
+export interface SetSecretDto {
+    playerRole: PlayerRole;
+    secret: string;
+}
+
+export interface GuessDto {
+    playerRole: PlayerRole;
+    guess: string;
 }
 
 export interface Player {
-  name: string;
-  role: string;
-  secret?: string;
-  hasChanged?: boolean;
+    id: number;
+    gameId: string;
+    role: PlayerRole;
+    name: string;
+    secret?: string;
+    hasChangedSecret: boolean;
 }
 
-export interface JoinGameResponse {
-  gameId: string;
-  playerRole: string;
-}
-
-export interface PlayersResponse {
-  players: Player[];
-}
-
-export interface StatusResponse {
-  status: string;
+export interface Game {
+    id: string;
+    status: GameStatus;
+    players: Player[];
+    winner?: PlayerRole;
 }

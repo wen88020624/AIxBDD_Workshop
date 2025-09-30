@@ -9,12 +9,15 @@ CREATE TABLE "Game" (
 -- CreateTable
 CREATE TABLE "Player" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name" TEXT NOT NULL,
-    "role" TEXT NOT NULL,
-    "secret" TEXT,
     "gameId" TEXT NOT NULL,
-    "hasChanged" BOOLEAN NOT NULL DEFAULT false,
+    "role" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "secret" TEXT,
+    "hasChangedSecret" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "Player_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "Game" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Player_gameId_role_key" ON "Player"("gameId", "role");

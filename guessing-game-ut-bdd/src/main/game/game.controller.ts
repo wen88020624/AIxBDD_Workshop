@@ -1,60 +1,32 @@
-import { Controller, Post, Body, Param, Put, Patch, Get } from '@nestjs/common';
+import { Controller, Put, Patch, Post, Param, Body } from '@nestjs/common';
 import { GameService } from './game.service';
-import { PlayerRole } from './game.enum';
+import { SetSecretDto, GuessDto } from './game.interface';
 
 @Controller('games')
 export class GameController {
-  constructor(private readonly gameService: GameService) {}
+    constructor(private gameService: GameService) {}
 
-  @Post()
-  async joinGame(
-    @Body('gameId') gameId: string,
-    @Body('playerName') playerName: string,
-  ) {
-    return this.gameService.joinGame(gameId, playerName);
-  }
+    @Put(':gameId/secret')
+    async setSecret(
+        @Param('gameId') gameId: string,
+        @Body() dto: SetSecretDto
+    ): Promise<void> {
+        await this.gameService.setSecret(gameId, dto);
+    }
 
-  @Put(':gameId/secret')
-  async setSecret(
-    @Param('gameId') gameId: string,
-    @Body('playerRole') playerRole: PlayerRole,
-    @Body('secret') secret: string,
-  ) {
-    await this.gameService.setSecret(gameId, playerRole, secret);
-  }
+    @Patch(':gameId/secret')
+    async updateSecret(
+        @Param('gameId') gameId: string,
+        @Body() dto: SetSecretDto
+    ): Promise<void> {
+        await this.gameService.updateSecret(gameId, dto);
+    }
 
-  @Patch(':gameId/secret')
-  async changeSecret(
-    @Param('gameId') gameId: string,
-    @Body('playerRole') playerRole: PlayerRole,
-    @Body('secret') secret: string,
-  ) {
-    await this.gameService.changeSecret(gameId, playerRole, secret);
-  }
-
-  @Get(':gameId/status')
-  async getStatus(@Param('gameId') gameId: string) {
-    const game = await this.gameService.getGame(gameId);
-    return { status: game.status };
-  }
-
-  @Get(':gameId/secrets')
-  async getSecrets(@Param('gameId') gameId: string) {
-    const game = await this.gameService.getGame(gameId);
-    return {
-      secrets: game.players.map(p => ({
-        id: p.role,
-        secret: p.secret || ''
-      }))
-    };
-  }
-
-  @Post(':gameId/guess')
-  async guess(
-    @Param('gameId') gameId: string,
-    @Body('playerRole') playerRole: PlayerRole,
-    @Body('guess') guess: string,
-  ) {
-    return this.gameService.guess(gameId, playerRole, guess);
-  }
+    @Post(':gameId/guess')
+    async guess(
+        @Param('gameId') gameId: string,
+        @Body() dto: GuessDto
+    ): Promise<{ a: number, b: number }> {
+        return await this.gameService.guess(gameId, dto.playerRole, dto.guess);
+    }
 }

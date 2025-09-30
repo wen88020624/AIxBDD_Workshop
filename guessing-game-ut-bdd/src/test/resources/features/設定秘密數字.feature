@@ -14,6 +14,7 @@ Feature: 猜數字遊戲 - 設定秘密數字
       | P2 |        |
 
   @ignore
+  @ignore
   Scenario: 兩個祕密數字都設定後進入猜測階段
     Given 遊戲 "ABC" 處於 "設定秘密數字階段" 狀態，包含玩家:
       | id | name   |
@@ -27,6 +28,7 @@ Feature: 猜數字遊戲 - 設定秘密數字
       | P1 |   1234 |
       | P2 |   1078 |
 
+  @ignore
   @ignore
   Scenario: 第一位玩家在猜測開始前更改祕密數字
     Given 遊戲 "ABC" 處於 "設定秘密數字階段" 狀態，包含玩家:
@@ -42,6 +44,7 @@ Feature: 猜數字遊戲 - 設定秘密數字
       | P2 |        |
 
   @ignore
+  @ignore
   Scenario: P2 試圖在 P1 之前設定祕密數字
     Given 遊戲 "ABC" 處於 "設定秘密數字階段" 狀態，包含玩家:
       | id | name   |
@@ -56,6 +59,7 @@ Feature: 猜數字遊戲 - 設定秘密數字
       | P2 |        |
 
   @ignore
+  @ignore
   Scenario Outline: 無效的祕密數字格式
     Given 遊戲 "ABC" 處於 "設定秘密數字階段" 狀態，包含玩家:
       | id | name   |
@@ -68,16 +72,15 @@ Feature: 猜數字遊戲 - 設定秘密數字
       | secret | reason                        |
       |    123 | secret length is not 4 digits |
       |  12345 | secret length is not 4 digits |
-      |   1123 | digits are not unique         |
+      |      9 | secret length is not 4 digits |
+      |  1234a | contains non-numeric values   |
       |   abcd | contains non-numeric values   |
       |   12a4 | contains non-numeric values   |
       |   1 23 | contains non-numeric values   |
-      |   0000 | digits are not unique         |
-      |      9 | secret length is not 4 digits |
-      |  1234a | secret length is not 4 digits |
       |   12-4 | contains non-numeric values   |
+      |   1123 | digits are not unique         |
+      |   0000 | digits are not unique         |
 
-  @ignore
   Scenario: P1 超過祕密數字變更限制
     Given 遊戲 "ABC" 處於 "設定秘密數字階段" 狀態，包含玩家:
       | id | name   | secret |
@@ -92,7 +95,6 @@ Feature: 猜數字遊戲 - 設定秘密數字
       | P1 |   5678 |
       | P2 |        |
 
-  @ignore
   Scenario: P1 試圖在猜測開始後更改祕密數字
     Given 遊戲 "ABC" 處於 "猜數字階段" 狀態，包含玩家:
       | id | name   | secret |
@@ -106,6 +108,7 @@ Feature: 猜數字遊戲 - 設定秘密數字
       | P1 |   1234 |
       | P2 |   5678 |
 
+  @ignore
   @ignore
   Scenario: P2 無法在猜測開始後更改祕密數字
     Given 遊戲 "ABC" 處於 "猜數字階段" 狀態，包含玩家:
