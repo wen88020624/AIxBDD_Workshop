@@ -5,7 +5,7 @@ Feature: a player joins a game
   #------------------------------------------------------------
   Rule: 後置 - 玩家輸入一組 3~5 位字元組成的「遊戲 ID」進行配對
   #------------------------------------------------------------
-    @ignore
+    @wip
     Scenario Outline: Player joins with valid game ID format
       When a player joins a game, with:
         | gameId   | playerName   |
